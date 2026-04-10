@@ -51,15 +51,8 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ github.run_number }}
-          name: "Tetris v${{ github.run_number }}"
-          body: |
-            ## 🐧 Linux
-            1. Скачай `Tetris-Linux.AppImage`
-            2. Запусти:
-```bash
-            chmod +x Tetris-Linux.AppImage
-            ./Tetris-Linux.AppImage
-```
+          name: Tetris v${{ github.run_number }}
+          body: "Скачай Tetris-Linux.AppImage, затем: chmod +x Tetris-Linux.AppImage && ./Tetris-Linux.AppImage"
           files: Tetris-Linux.AppImage
           draft: false
           prerelease: false
