@@ -1,0 +1,10 @@
+build/
+*.o
+*.a
+moc_*
+ui_*
+CMakeCache.txt
+CMakeFiles/
+tetris_scores.dat
+*.user
+.qtcreator/
