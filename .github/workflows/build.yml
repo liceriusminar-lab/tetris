@@ -1,4 +1,3 @@
-cat > /home/licerius/Desktop/PG/Tetris/.github/workflows/build.yml << 'EOF'
 name: Build Tetris
 
 on:
@@ -14,14 +13,7 @@ jobs:
       - name: Install Qt and dependencies
         run: |
           sudo apt update
-          sudo apt install -y qt6-base-dev qt6-base-private-dev \
-                             qt6-tools-dev cmake g++ \
-                             libgl1-mesa-dev libglib2.0-0 \
-                             libxkbcommon-x11-0 libxcb-icccm4 \
-                             libxcb-image0 libxcb-keysyms1 \
-                             libxcb-randr0 libxcb-render-util0 \
-                             libxcb-xinerama0 libxcb-xfixes0 \
-                             libdbus-1-3 wget
+          sudo apt install -y qt6-base-dev qt6-base-private-dev qt6-tools-dev cmake g++ libgl1-mesa-dev libglib2.0-0 libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 libdbus-1-3 wget
 
       - name: Build
         run: |
@@ -32,20 +24,13 @@ jobs:
         run: |
           wget -q https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
           wget -q https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
-          chmod +x linuxdeploy-x86_64.AppImage
-          chmod +x linuxdeploy-plugin-qt-x86_64.AppImage
+          chmod +x linuxdeploy-x86_64.AppImage linuxdeploy-plugin-qt-x86_64.AppImage
 
       - name: Create AppImage
         run: |
           export QMAKE=$(which qmake6 || which qmake)
           export OUTPUT=Tetris-Linux.AppImage
-          ./linuxdeploy-x86_64.AppImage \
-            --appdir AppDir \
-            --executable build/Tetris \
-            --desktop-file tetris.desktop \
-            --icon-file tetris.png \
-            --plugin qt \
-            --output appimage
+          ./linuxdeploy-x86_64.AppImage --appdir AppDir --executable build/Tetris --desktop-file tetris.desktop --icon-file tetris.png --plugin qt --output appimage
 
       - name: Upload Linux artifact
         uses: actions/upload-artifact@v4
@@ -77,7 +62,7 @@ jobs:
           cmake -B build -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
           cmake --build build --parallel
 
-      - name: Deploy Qt
+      - name: Deploy
         shell: cmd
         run: |
           mkdir release
@@ -140,7 +125,7 @@ jobs:
         with:
           tag_name: v${{ github.run_number }}
           name: Tetris v${{ github.run_number }}
-          body: "Linux: chmod +x Tetris-Linux.AppImage && ./Tetris-Linux.AppImage | Windows: распакуй zip и запусти Tetris.exe | macOS: открой dmg и перетащи в Applications"
+          body: "Linux: chmod +x Tetris-Linux.AppImage && ./Tetris-Linux.AppImage | Windows: распакуй zip и запусти Tetris.exe | macOS: открой dmg"
           files: |
             artifacts/Tetris-Linux/Tetris-Linux.AppImage
             artifacts/Tetris-Windows/Tetris-Windows.zip
@@ -149,4 +134,3 @@ jobs:
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-EOF
