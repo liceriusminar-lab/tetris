@@ -1,4 +1,5 @@
-name: Build Tetris Linux
+cat > /home/licerius/Desktop/PG/Tetris/.github/workflows/build.yml << 'EOF'
+name: Build Tetris
 
 on:
   push:
@@ -24,9 +25,8 @@ jobs:
 
       - name: Build
         run: |
-          mkdir build && cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Release
-          make -j$(nproc)
+          cmake -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --parallel
 
       - name: Download linuxdeploy
         run: |
@@ -47,14 +47,106 @@ jobs:
             --plugin qt \
             --output appimage
 
+      - name: Upload Linux artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Tetris-Linux
+          path: Tetris-Linux.AppImage
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: '6.6.0'
+          host: 'windows'
+          target: 'desktop'
+          arch: 'win64_mingw'
+
+      - name: Install MinGW
+        uses: egor-tensin/setup-mingw@v2
+        with:
+          platform: x64
+
+      - name: Build
+        shell: cmd
+        run: |
+          cmake -B build -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --parallel
+
+      - name: Deploy Qt
+        shell: cmd
+        run: |
+          mkdir release
+          copy build\Tetris.exe release\
+          windeployqt --release --no-translations release\Tetris.exe
+
+      - name: Zip
+        shell: powershell
+        run: Compress-Archive -Path release\* -DestinationPath Tetris-Windows.zip
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Tetris-Windows
+          path: Tetris-Windows.zip
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: '6.6.0'
+          host: 'mac'
+          target: 'desktop'
+
+      - name: Build
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --parallel
+
+      - name: Deploy
+        run: |
+          cd build
+          macdeployqt Tetris.app -dmg
+
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Tetris-macOS
+          path: build/Tetris.dmg
+
+  release:
+    needs: [build-linux, build-windows, build-macos]
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ github.run_number }}
           name: Tetris v${{ github.run_number }}
-          body: "Скачай Tetris-Linux.AppImage, затем: chmod +x Tetris-Linux.AppImage && ./Tetris-Linux.AppImage"
-          files: Tetris-Linux.AppImage
+          body: "Linux: chmod +x Tetris-Linux.AppImage && ./Tetris-Linux.AppImage | Windows: распакуй zip и запусти Tetris.exe | macOS: открой dmg и перетащи в Applications"
+          files: |
+            artifacts/Tetris-Linux/Tetris-Linux.AppImage
+            artifacts/Tetris-Windows/Tetris-Windows.zip
+            artifacts/Tetris-macOS/Tetris.dmg
           draft: false
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+EOF
