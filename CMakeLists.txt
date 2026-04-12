@@ -14,18 +14,30 @@ endif()
 set(SOURCES
     main.cpp
     mainwindow.cpp
+    mainwindow.h
     menuwidget.cpp
+    menuwidget.h
     tetriswidget.cpp
+    tetriswidget.h
     tetromino.cpp
+    tetromino.h
     apiclient.cpp
+    apiclient.h
+    mainwindow.ui
 )
 
 if(Qt6_FOUND)
     add_executable(Tetris ${SOURCES})
-    target_link_libraries(Tetris PRIVATE
-        Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Network)
+    target_link_libraries(Tetris PRIVATE Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Network)
 else()
     add_executable(Tetris ${SOURCES})
-    target_link_libraries(Tetris PRIVATE
-        Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Network)
+    target_link_libraries(Tetris PRIVATE Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Network)
+endif()
+
+if(WIN32)
+    set_target_properties(Tetris PROPERTIES WIN32_EXECUTABLE TRUE)
+endif()
+
+if(APPLE)
+    set_target_properties(Tetris PROPERTIES MACOSX_BUNDLE TRUE)
 endif()
